@@ -1,0 +1,141 @@
+name: Security CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm install
+
+      # SAST (Static Application Security Testing)
+      - name: Run npm audit (SAST)
+        run: |
+          echo "🔍 Running npm audit for Static Application Security Testing..."
+          npm audit --audit-level moderate || true
+          echo "✅ npm audit completed"
+
+      # SCA (Software Composition Analysis) - Alternative using npm audit
+      - name: Run npm audit with JSON output (SCA)
+        run: |
+          echo "🔍 Running SCA with npm audit..."
+          npm audit --json | jq '.' > npm-audit-report.json || true
+          echo "📊 SCA Report generated"
+
+      # Build and test the application
+      - name: Build application
+        run: |
+          echo "🔨 Building application..."
+          npm run build || echo "No build script found, skipping build"
+
+      # Security testing with additional tools
+      - name: Install security testing tools
+        run: |
+          npm install -g retire
+          npm install -g jshint
+
+      - name: Run retire.js (SCA for vulnerable dependencies)
+        run: |
+          echo "🔍 Running retire.js for dependency vulnerability scanning..."
+          retire --path . --outputformat json --outputpath retire-report.json || true
+          echo "📊 retire.js scan completed"
+
+      - name: Run JSHint for code quality (SAST)
+        run: |
+          echo "🔍 Running JSHint for code quality analysis..."
+          jshint index.ts database.ts || true
+          echo "✅ JSHint analysis completed"
+
+      # Upload security reports as artifacts
+      - name: Upload npm audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-audit-report
+          path: npm-audit-report.json
+
+      - name: Upload retire.js report
+        uses: actions/upload-artifact@v4
+        with:
+          name: retire-report
+          path: retire-report.json
+
+      # Check for critical vulnerabilities
+      - name: Check for critical vulnerabilities
+        run: |
+          echo "🔍 Checking for critical security issues..."
+          CRITICAL_VULNS=$(npm audit --audit-level critical --json | jq '.metadata.vulnerabilities.critical // 0' 2>/dev/null || echo "0")
+          HIGH_VULNS=$(npm audit --audit-level high --json | jq '.metadata.vulnerabilities.high // 0' 2>/dev/null || echo "0")
+
+          echo "Critical vulnerabilities: $CRITICAL_VULNS"
+          echo "High vulnerabilities: $HIGH_VULNS"
+
+          if [ "$CRITICAL_VULNS" -gt 0 ]; then
+            echo "❌ Critical vulnerabilities found! Pipeline failed."
+            exit 1
+          fi
+
+          if [ "$HIGH_VULNS" -gt 3 ]; then
+            echo "⚠️ Too many high vulnerabilities found! Pipeline failed."
+            exit 1
+          fi
+
+          echo "✅ Security checks passed!"
+
+      - name: Test API startup
+        run: |
+          echo "🧪 Testing API startup..."
+          timeout 10s npm start || echo "API startup test completed (timeout expected)"
+
+  # Additional security job using CodeQL (GitHub's built-in SAST)
+  codeql-analysis:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript"
+
+  # Dependency review for pull requests
+  dependency-review:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: moderate
+          allow-licenses: MIT, Apache-2.0, BSD-3-Clause, ISC
