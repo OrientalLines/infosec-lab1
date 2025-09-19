@@ -127,13 +127,22 @@ jobs:
 
   dependency-review:
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Dependency Review
+      - name: Dependency Review (PR)
+        if: github.event_name == 'pull_request'
         uses: actions/dependency-review-action@v4
         with:
+          fail-on-severity: moderate
+          allow-licenses: MIT, Apache-2.0, BSD-3-Clause, ISC
+
+      - name: Dependency Review (push)
+        if: github.event_name == 'push'
+        uses: actions/dependency-review-action@v4
+        with:
+          base-ref: ${{ github.event.before }}
+          head-ref: ${{ github.sha }}
           fail-on-severity: moderate
           allow-licenses: MIT, Apache-2.0, BSD-3-Clause, ISC
