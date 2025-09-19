@@ -53,7 +53,6 @@ class DatabaseManager {
     }
 
     private seedDemoData(): void {
-        // Check if demo user exists
         this.db.get('SELECT id FROM users WHERE username = ?', ['demo_user'], (err, row) => {
             if (err) {
                 console.error('Error checking demo user:', err);
@@ -61,7 +60,6 @@ class DatabaseManager {
             }
 
             if (!row) {
-                // Hash password for demo user
                 const bcrypt = require('bcrypt');
                 const saltRounds = 12;
                 const demoPassword = 'demo123';
@@ -72,7 +70,6 @@ class DatabaseManager {
                         return;
                     }
 
-                    // Insert demo user
                     this.db.run(
                         'INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)',
                         ['demo_user', 'demo@example.com', hash],
@@ -82,7 +79,6 @@ class DatabaseManager {
                                 return;
                             }
 
-                            // Insert demo posts
                             const demoPosts = [
                                 { title: 'Welcome Post', content: 'This is a demo post to test the API.' },
                                 { title: 'Security Best Practices', content: 'Always use parameterized queries to prevent SQL injection.' },

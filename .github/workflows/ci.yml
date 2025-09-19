@@ -23,27 +23,23 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      # SAST (Static Application Security Testing)
       - name: Run npm audit (SAST)
         run: |
           echo "Running npm audit for Static Application Security Testing..."
           npm audit --audit-level moderate || true
           echo "npm audit completed"
 
-      # SCA (Software Composition Analysis) - Alternative using npm audit
       - name: Run npm audit with JSON output (SCA)
         run: |
           echo "Running SCA with npm audit..."
           npm audit --json | jq '.' > npm-audit-report.json || true
           echo "SCA Report generated"
 
-      # Build and test the application
       - name: Build application
         run: |
           echo "🔨 Building application..."
           npm run build || echo "No build script found, skipping build"
 
-      # Security testing with additional tools
       - name: Install security testing tools
         run: |
           npm install -g retire
@@ -61,7 +57,6 @@ jobs:
           jshint index.ts database.ts || true
           echo "JSHint analysis completed"
 
-      # Upload security reports as artifacts
       - name: Upload npm audit report
         uses: actions/upload-artifact@v4
         with:
@@ -74,7 +69,6 @@ jobs:
           name: retire-report
           path: retire-report.json
 
-      # Check for critical vulnerabilities
       - name: Check for critical vulnerabilities
         run: |
           echo "Checking for critical security issues..."

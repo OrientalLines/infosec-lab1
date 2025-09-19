@@ -1,117 +1,87 @@
-# Secure Web API Implementation
+# Lab1
 
 ## Features
 
 ### Core Functionality
 
-- **JWT Authentication**: Secure token-based authentication with 24-hour expiration
-- **Password Hashing**: bcrypt with salt rounds for secure password storage
-- **SQLite Database**: Built-in database with parameterized queries
-- **RESTful API**: Clean, well-documented endpoints
-- **Input Validation**: Comprehensive validation for all user inputs
+- JWT Authentication
+- Password Hashing
+- SQLite Database
+- RESTful API
+- Input Validation
 
 ### Security Measures Implemented
 
 #### Authentication & Authorization
 
-- JWT token issuance upon successful login
-- Protected routes with middleware authentication
-- Password hashing with bcrypt (12 salt rounds)
-- Secure credential validation
+- Выдача JWT-токена при успешном входе
+- Защищённые маршруты с аутентификацией через middleware
+- Хеширование паролей с помощью bcrypt (12 раундов соли)
+- Безопасная проверка учетных данных
 
 #### SQL Injection Protection
 
-- Parameterized queries using SQLite prepared statements
-- Input sanitization and validation
-- No string concatenation for SQL queries
+- Параметризованные запросы с использованием подготовленных выражений SQLite
+- Санитизация и валидация входных данных
+- Отсутствие конкатенации строк при формировании SQL-запросов
 
 #### XSS Protection
 
-- HTML entity encoding for all user-generated content
-- Data sanitization before sending responses
-- Content Security Policy headers
+- Кодирование HTML-сущностей для всего пользовательского контента
+- Санитизация данных перед отправкой в ответе
+- Заголовки политики безопасности контента (Content Security Policy)
 
 #### Rate Limiting
 
-- General API rate limiting (100 requests/15min)
-- Stricter auth endpoint limiting (5 attempts/15min)
-- Automatic blocking of excessive requests
+- Общий лимит запросов к API (100 запросов/15 мин)
+- Более строгий лимит для эндпоинтов аутентификации (5 попыток/15 мин)
+- Автоматическая блокировка при превышении лимита запросов
 
 #### Security Headers
 
-- Helmet.js for comprehensive security headers
-- CORS protection with configurable origins
-- Content Security Policy
-- X-Frame-Options, X-Content-Type-Options, etc.
+- Helmet.js для комплексных HTTP-заголовков безопасности
+- CORS-защита с настраиваемыми источниками
+- Политика безопасности контента (Content Security Policy)
+- X-Frame-Options, X-Content-Type-Options и другие заголовки
 
 ### API Endpoints
 
 #### Public Endpoints
 
-- `GET /health` - Health check endpoint
-- `POST /auth/login` - User authentication
-- `POST /api/users` - User registration
+- `GET /health`
+- `POST /auth/login`
+- `POST /api/users`
 
 #### Protected Endpoints (Require JWT Token)
 
-- `GET /api/data` - Get user data and posts
-- `POST /api/posts` - Create new post
+- `GET /api/data`
+- `POST /api/posts`
 
 ### Demo User
 
 - **Username**: `demo_user`
 - **Password**: `demo123`
 
-## Technology Stack
-
-- **Runtime**: Bun (v1.2.20)
-- **Framework**: Express.js v5
-- **Database**: SQLite3 with Bun
-- **Authentication**: JWT (jsonwebtoken)
-- **Password Hashing**: bcrypt
-- **Security**: Helmet, CORS, express-rate-limit
-- **Language**: TypeScript
-
-## Installation & Setup
-
-```bash
-# Install dependencies
-bun install
-
-# Start the server
-bun run start
-
-# Or run in development mode with auto-reload
-bun run dev
-```
-
-The server will start on `http://localhost:3000`
-
 ## Testing
 
 ### Automated Testing
 
 ```bash
-# Run comprehensive security tests
 bun run test:api
 ```
 
 ### Manual Testing with curl
 
 ```bash
-# Health check
 curl http://localhost:3000/health
 
-# Login (get JWT token)
 curl -X POST http://localhost:3000/auth/login \
   -H "Content-Type: application/json" \
   -d '{"username":"demo_user","password":"demo123"}'
 
-# Access protected data (replace TOKEN with actual JWT)
 curl -H "Authorization: Bearer TOKEN" \
   http://localhost:3000/api/data
 
-# Create new user
 curl -X POST http://localhost:3000/api/users \
   -H "Content-Type: application/json" \
   -d '{"username":"newuser","email":"new@example.com","password":"securepass123"}'
@@ -119,142 +89,37 @@ curl -X POST http://localhost:3000/api/users \
 
 ## Security Testing Results
 
-### All Security Tests Passed
-
-1. **Authentication**: JWT tokens properly validated
-2. **SQL Injection**: Parameterized queries prevent injection attacks
-3. **XSS Protection**: User input properly sanitized
-4. **Rate Limiting**: Excessive requests automatically blocked
-5. **Password Security**: bcrypt hashing prevents plain text storage
-6. **Input Validation**: All inputs validated before processing
-
 ### SAST/SCA Integration
 
 The project includes comprehensive CI/CD pipeline with:
 
 - **Static Application Security Testing (SAST)**:
 
-  - npm audit for dependency vulnerabilities
-  - JSHint for code quality analysis
-  - GitHub CodeQL for advanced static analysis
+  - npm audit для поиска уязвимостей в зависимостях
+  - JSHint для анализа качества кода
+  - GitHub CodeQL для продвинутого статического анализа
 
 - **Software Composition Analysis (SCA)**:
-  - OWASP Dependency-Check via retire.js
-  - Automated vulnerability scanning
-  - Critical vulnerability blocking
 
-## Project Structure
-
-```
-├── index.ts           # Main API server
-├── database.ts        # SQLite database manager
-├── test-api.ts        # Security testing script
-├── package.json       # Dependencies and scripts
-├── tsconfig.json      # TypeScript configuration
-├── .github/
-│   └── workflows/
-│       └── ci.yml     # GitHub Actions CI/CD pipeline
-└── README.md          # This documentation
-```
+  - OWASP Dependency-Check с помощью retire.js
+  - Автоматизированное сканирование на уязвимости
+  - Блокировка при обнаружении критических уязвимостей
 
 ## CI/CD Pipeline
 
 ### Automated Security Scanning
 
-- Runs on every push and pull request
-- SAST analysis with npm audit and CodeQL
-- SCA with retire.js for dependency vulnerabilities
-- Critical vulnerability detection and blocking
-- Security report artifacts generation
+- Запускается при каждом push и pull request
+- SAST-анализ с помощью npm audit и CodeQL
+- SCA с retire.js для поиска уязвимостей в зависимостях
+- Обнаружение и блокировка критических уязвимостей
+- Генерация артефактов с отчётами по безопасности
 
 ### Pipeline Features
 
-- Node.js 18 environment
-- Automated dependency installation
-- Multi-stage security analysis
-- Report generation and artifact storage
-- Build verification
-- API startup testing
-
-## Security Implementation Details
-
-### JWT Authentication Flow
-
-1. User sends login credentials
-2. Server validates credentials against hashed passwords
-3. JWT token generated with user data and 24h expiration
-4. Token returned to client for subsequent requests
-5. Protected routes validate JWT before processing
-
-### SQL Injection Prevention
-
-- All database queries use parameterized statements
-- User inputs never concatenated into SQL strings
-- Input validation before database operations
-- SQLite prepared statements for all queries
-
-### XSS Protection Strategy
-
-- HTML entity encoding for all user content
-- Recursive sanitization of nested objects
-- CSP headers to prevent script injection
-- Input validation at API boundaries
-
-### Rate Limiting Configuration
-
-- General API: 100 requests per 15 minutes
-- Authentication: 5 attempts per 15 minutes
-- Automatic IP-based blocking
-- Configurable limits per endpoint
-
-## Database Schema
-
-```sql
--- Users table
-CREATE TABLE users (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  username TEXT UNIQUE NOT NULL,
-  email TEXT UNIQUE NOT NULL,
-  password_hash TEXT NOT NULL,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
--- Posts table
-CREATE TABLE posts (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  title TEXT NOT NULL,
-  content TEXT NOT NULL,
-  user_id INTEGER NOT NULL,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users (id)
-);
-```
-
-## Quick Start
-
-1. **Clone and install**:
-
-   ```bash
-   git clone <repository-url>
-   cd lab1
-   bun install
-   ```
-
-2. **Start the server**:
-
-   ```bash
-   bun run start
-   ```
-
-3. **Test authentication**:
-
-   ```bash
-   curl -X POST http://localhost:3000/auth/login \
-     -H "Content-Type: application/json" \
-     -d '{"username":"demo_user","password":"demo123"}'
-   ```
-
-4. **Run security tests**:
-   ```bash
-   bun run test:api
-   ```
+- Среда Node.js 18
+- Автоматическая установка зависимостей
+- Многоэтапный анализ безопасности
+- Генерация отчётов и хранение артефактов
+- Проверка сборки
+- Тестирование запуска API
