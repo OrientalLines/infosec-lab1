@@ -1,17 +1,5 @@
 # Lab1
 
-## Features
-
-### Core Functionality
-
-- JWT Authentication
-- Password Hashing
-- SQLite Database
-- RESTful API
-- Input Validation
-
-### Security Measures Implemented
-
 #### Authentication & Authorization
 
 - Выдача JWT-токена при успешном входе
@@ -57,6 +45,11 @@
 - `GET /api/data`
 - `POST /api/posts`
 
+### CI/CD Pipelines
+
+![Image](./assets/ci1.png)
+![Image](./assets/ci2.png)
+
 ### Demo User
 
 - **Username**: `demo_user`
@@ -90,8 +83,6 @@ curl -X POST http://localhost:3000/api/users \
 ## Security Testing Results
 
 ### SAST/SCA Integration
-
-The project includes comprehensive CI/CD pipeline with:
 
 - **Static Application Security Testing (SAST)**:
 
