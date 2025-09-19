@@ -26,16 +26,16 @@ jobs:
       # SAST (Static Application Security Testing)
       - name: Run npm audit (SAST)
         run: |
-          echo "🔍 Running npm audit for Static Application Security Testing..."
+          echo "Running npm audit for Static Application Security Testing..."
           npm audit --audit-level moderate || true
-          echo "✅ npm audit completed"
+          echo "npm audit completed"
 
       # SCA (Software Composition Analysis) - Alternative using npm audit
       - name: Run npm audit with JSON output (SCA)
         run: |
-          echo "🔍 Running SCA with npm audit..."
+          echo "Running SCA with npm audit..."
           npm audit --json | jq '.' > npm-audit-report.json || true
-          echo "📊 SCA Report generated"
+          echo "SCA Report generated"
 
       # Build and test the application
       - name: Build application
@@ -51,15 +51,15 @@ jobs:
 
       - name: Run retire.js (SCA for vulnerable dependencies)
         run: |
-          echo "🔍 Running retire.js for dependency vulnerability scanning..."
+          echo "Running retire.js for dependency vulnerability scanning..."
           retire --path . --outputformat json --outputpath retire-report.json || true
-          echo "📊 retire.js scan completed"
+          echo "retire.js scan completed"
 
       - name: Run JSHint for code quality (SAST)
         run: |
-          echo "🔍 Running JSHint for code quality analysis..."
+          echo "Running JSHint for code quality analysis..."
           jshint index.ts database.ts || true
-          echo "✅ JSHint analysis completed"
+          echo "JSHint analysis completed"
 
       # Upload security reports as artifacts
       - name: Upload npm audit report
@@ -77,7 +77,7 @@ jobs:
       # Check for critical vulnerabilities
       - name: Check for critical vulnerabilities
         run: |
-          echo "🔍 Checking for critical security issues..."
+          echo "Checking for critical security issues..."
           CRITICAL_VULNS=$(npm audit --audit-level critical --json | jq '.metadata.vulnerabilities.critical // 0' 2>/dev/null || echo "0")
           HIGH_VULNS=$(npm audit --audit-level high --json | jq '.metadata.vulnerabilities.high // 0' 2>/dev/null || echo "0")
 
@@ -85,12 +85,12 @@ jobs:
           echo "High vulnerabilities: $HIGH_VULNS"
 
           if [ "$CRITICAL_VULNS" -gt 0 ]; then
-            echo "❌ Critical vulnerabilities found! Pipeline failed."
+            echo "Critical vulnerabilities found! Pipeline failed."
             exit 1
           fi
 
           if [ "$HIGH_VULNS" -gt 3 ]; then
-            echo "⚠️ Too many high vulnerabilities found! Pipeline failed."
+            echo "Too many high vulnerabilities found! Pipeline failed."
             exit 1
           fi
 
@@ -101,7 +101,6 @@ jobs:
           echo "🧪 Testing API startup..."
           timeout 10s npm start || echo "API startup test completed (timeout expected)"
 
-  # Additional security job using CodeQL (GitHub's built-in SAST)
   codeql-analysis:
     runs-on: ubuntu-latest
     permissions:
@@ -126,7 +125,6 @@ jobs:
         with:
           category: "/language:javascript"
 
-  # Dependency review for pull requests
   dependency-review:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'

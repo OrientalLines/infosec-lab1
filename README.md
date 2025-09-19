@@ -1,10 +1,9 @@
 # Secure Web API Implementation
 
-A comprehensive secure web API built with Node.js, Express, and Bun, implementing industry-standard security practices including JWT authentication, SQL injection protection, XSS prevention, and automated security scanning.
-
-## 🚀 Features
+## Features
 
 ### Core Functionality
+
 - **JWT Authentication**: Secure token-based authentication with 24-hour expiration
 - **Password Hashing**: bcrypt with salt rounds for secure password storage
 - **SQLite Database**: Built-in database with parameterized queries
@@ -13,28 +12,33 @@ A comprehensive secure web API built with Node.js, Express, and Bun, implementin
 
 ### Security Measures Implemented
 
-#### 🔐 Authentication & Authorization
+#### Authentication & Authorization
+
 - JWT token issuance upon successful login
 - Protected routes with middleware authentication
 - Password hashing with bcrypt (12 salt rounds)
 - Secure credential validation
 
-#### 🛡️ SQL Injection Protection
+#### SQL Injection Protection
+
 - Parameterized queries using SQLite prepared statements
 - Input sanitization and validation
 - No string concatenation for SQL queries
 
-#### 🧹 XSS Protection
+#### XSS Protection
+
 - HTML entity encoding for all user-generated content
 - Data sanitization before sending responses
 - Content Security Policy headers
 
-#### 📊 Rate Limiting
+#### Rate Limiting
+
 - General API rate limiting (100 requests/15min)
 - Stricter auth endpoint limiting (5 attempts/15min)
 - Automatic blocking of excessive requests
 
-#### 🔒 Security Headers
+#### Security Headers
+
 - Helmet.js for comprehensive security headers
 - CORS protection with configurable origins
 - Content Security Policy
@@ -43,19 +47,22 @@ A comprehensive secure web API built with Node.js, Express, and Bun, implementin
 ### API Endpoints
 
 #### Public Endpoints
+
 - `GET /health` - Health check endpoint
 - `POST /auth/login` - User authentication
 - `POST /api/users` - User registration
 
 #### Protected Endpoints (Require JWT Token)
+
 - `GET /api/data` - Get user data and posts
 - `POST /api/posts` - Create new post
 
 ### Demo User
+
 - **Username**: `demo_user`
 - **Password**: `demo123`
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 - **Runtime**: Bun (v1.2.20)
 - **Framework**: Express.js v5
@@ -65,7 +72,7 @@ A comprehensive secure web API built with Node.js, Express, and Bun, implementin
 - **Security**: Helmet, CORS, express-rate-limit
 - **Language**: TypeScript
 
-## 📦 Installation & Setup
+## Installation & Setup
 
 ```bash
 # Install dependencies
@@ -80,9 +87,10 @@ bun run dev
 
 The server will start on `http://localhost:3000`
 
-## 🧪 Testing
+## Testing
 
 ### Automated Testing
+
 ```bash
 # Run comprehensive security tests
 bun run test:api
@@ -109,9 +117,9 @@ curl -X POST http://localhost:3000/api/users \
   -d '{"username":"newuser","email":"new@example.com","password":"securepass123"}'
 ```
 
-## 🔍 Security Testing Results
+## Security Testing Results
 
-### ✅ All Security Tests Passed
+### All Security Tests Passed
 
 1. **Authentication**: JWT tokens properly validated
 2. **SQL Injection**: Parameterized queries prevent injection attacks
@@ -125,6 +133,7 @@ curl -X POST http://localhost:3000/api/users \
 The project includes comprehensive CI/CD pipeline with:
 
 - **Static Application Security Testing (SAST)**:
+
   - npm audit for dependency vulnerabilities
   - JSHint for code quality analysis
   - GitHub CodeQL for advanced static analysis
@@ -134,7 +143,7 @@ The project includes comprehensive CI/CD pipeline with:
   - Automated vulnerability scanning
   - Critical vulnerability blocking
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 ├── index.ts           # Main API server
@@ -148,9 +157,10 @@ The project includes comprehensive CI/CD pipeline with:
 └── README.md          # This documentation
 ```
 
-## 🚦 CI/CD Pipeline
+## CI/CD Pipeline
 
 ### Automated Security Scanning
+
 - Runs on every push and pull request
 - SAST analysis with npm audit and CodeQL
 - SCA with retire.js for dependency vulnerabilities
@@ -158,6 +168,7 @@ The project includes comprehensive CI/CD pipeline with:
 - Security report artifacts generation
 
 ### Pipeline Features
+
 - Node.js 18 environment
 - Automated dependency installation
 - Multi-stage security analysis
@@ -165,9 +176,10 @@ The project includes comprehensive CI/CD pipeline with:
 - Build verification
 - API startup testing
 
-## 🔐 Security Implementation Details
+## Security Implementation Details
 
 ### JWT Authentication Flow
+
 1. User sends login credentials
 2. Server validates credentials against hashed passwords
 3. JWT token generated with user data and 24h expiration
@@ -175,24 +187,27 @@ The project includes comprehensive CI/CD pipeline with:
 5. Protected routes validate JWT before processing
 
 ### SQL Injection Prevention
+
 - All database queries use parameterized statements
 - User inputs never concatenated into SQL strings
 - Input validation before database operations
 - SQLite prepared statements for all queries
 
 ### XSS Protection Strategy
+
 - HTML entity encoding for all user content
 - Recursive sanitization of nested objects
 - CSP headers to prevent script injection
 - Input validation at API boundaries
 
 ### Rate Limiting Configuration
+
 - General API: 100 requests per 15 minutes
 - Authentication: 5 attempts per 15 minutes
 - Automatic IP-based blocking
 - Configurable limits per endpoint
 
-## 📊 Database Schema
+## Database Schema
 
 ```sql
 -- Users table
@@ -215,9 +230,10 @@ CREATE TABLE posts (
 );
 ```
 
-## 🏃‍♂️ Quick Start
+## Quick Start
 
 1. **Clone and install**:
+
    ```bash
    git clone <repository-url>
    cd lab1
@@ -225,11 +241,13 @@ CREATE TABLE posts (
    ```
 
 2. **Start the server**:
+
    ```bash
    bun run start
    ```
 
 3. **Test authentication**:
+
    ```bash
    curl -X POST http://localhost:3000/auth/login \
      -H "Content-Type: application/json" \
@@ -240,29 +258,3 @@ CREATE TABLE posts (
    ```bash
    bun run test:api
    ```
-
-## 📋 Assignment Requirements Compliance
-
-✅ **Stack Selection**: Node.js + Express with Bun runtime
-✅ **Project Initialization**: npm/bun package management
-✅ **Git Integration**: Repository initialized and configured
-✅ **API Endpoints**: 3+ endpoints implemented with security
-✅ **Database**: SQLite with secure query patterns
-✅ **SQLi Protection**: Parameterized queries throughout
-✅ **XSS Protection**: Data sanitization implemented
-✅ **Authentication**: JWT with secure password hashing
-✅ **CI/CD Pipeline**: GitHub Actions with SAST/SCA
-✅ **Security Testing**: Comprehensive test suite
-✅ **Documentation**: Complete API documentation
-
-## 🔗 Links
-
-- [Bun Runtime](https://bun.sh)
-- [Express.js](https://expressjs.com)
-- [SQLite](https://sqlite.org)
-- [JWT](https://jwt.io)
-- [OWASP Security Guidelines](https://owasp.org)
-
----
-
-**Note**: This implementation follows OWASP security guidelines and industry best practices for secure API development.

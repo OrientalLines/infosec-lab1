@@ -6,14 +6,14 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { db } from './database';
 
-// Environment variables (in production, use proper env management)
+
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
 const PORT = process.env.PORT || 3000;
 
-// Initialize Express app
+
 const app = express();
 
-// Security middleware
+
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
@@ -25,13 +25,12 @@ app.use(helmet({
     },
 }));
 
-// CORS configuration
+
 app.use(cors({
     origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
     credentials: true,
 }));
 
-// Rate limiting
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 100, // limit each IP to 100 requests per windowMs
@@ -39,7 +38,6 @@ const limiter = rateLimit({
 });
 app.use('/auth/', limiter);
 
-// Auth rate limiting (more restrictive)
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 5, // limit each IP to 5 auth attempts per windowMs
@@ -47,11 +45,9 @@ const authLimiter = rateLimit({
 });
 app.use('/auth/login', authLimiter);
 
-// Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// JWT Authentication middleware
 const authenticateToken = (req: express.Request, res: express.Response, next: express.NextFunction) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
@@ -69,7 +65,6 @@ const authenticateToken = (req: express.Request, res: express.Response, next: ex
     });
 };
 
-// Data sanitization function (XSS protection)
 const sanitizeInput = (input: string): string => {
     if (typeof input !== 'string') return input;
     return input
@@ -98,19 +93,15 @@ const sanitizeObject = (obj: any): any => {
     return obj;
 };
 
-// API Routes
 
-// Health check endpoint
 app.get('/health', (req, res) => {
     res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-// Authentication endpoint
 app.post('/auth/login', async (req, res) => {
     try {
         const { username, password } = req.body;
 
-        // Input validation
         if (!username || !password) {
             return res.status(400).json({ error: 'Username and password are required' });
         }
@@ -119,21 +110,18 @@ app.post('/auth/login', async (req, res) => {
             return res.status(400).json({ error: 'Invalid input format' });
         }
 
-        // Get user from database (parameterized query prevents SQL injection)
         const user = await db.getUserByUsername(username);
 
         if (!user) {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
-        // Verify password hash
         const isValidPassword = await bcrypt.compare(password, user.password_hash);
 
         if (!isValidPassword) {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
-        // Generate JWT token
         const token = jwt.sign(
             {
                 userId: user.id,
@@ -144,7 +132,6 @@ app.post('/auth/login', async (req, res) => {
             { expiresIn: '24h' }
         );
 
-        // Return sanitized user data (without password hash)
         res.json({
             message: 'Login successful',
             token,
@@ -162,21 +149,17 @@ app.post('/auth/login', async (req, res) => {
     }
 });
 
-// Protected data endpoint
 app.get('/api/data', authenticateToken, async (req, res) => {
     try {
         const userId = (req as any).user.userId;
 
-        // Get user data
         const user = await db.getUserById(userId);
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        // Get user's posts
         const posts = await db.getPostsByUserId(userId);
 
-        // Sanitize data before sending (XSS protection)
         const sanitizedUser = sanitizeObject({
             id: user.id,
             username: user.username,
@@ -198,12 +181,10 @@ app.get('/api/data', authenticateToken, async (req, res) => {
     }
 });
 
-// Create user endpoint (for demo purposes)
 app.post('/api/users', async (req, res) => {
     try {
         const { username, email, password } = req.body;
 
-        // Input validation
         if (!username || !email || !password) {
             return res.status(400).json({ error: 'Username, email, and password are required' });
         }
@@ -216,20 +197,16 @@ app.post('/api/users', async (req, res) => {
             return res.status(400).json({ error: 'Password must be at least 6 characters long' });
         }
 
-        // Validate email format (basic)
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             return res.status(400).json({ error: 'Invalid email format' });
         }
 
-        // Hash password with bcrypt (prevents storing plain text passwords)
         const saltRounds = 12;
         const passwordHash = await bcrypt.hash(password, saltRounds);
 
-        // Create user (parameterized query prevents SQL injection)
         const user = await db.createUser(username, email, passwordHash);
 
-        // Return sanitized user data
         const sanitizedUser = sanitizeObject({
             id: user.id,
             username: user.username,
@@ -252,13 +229,11 @@ app.post('/api/users', async (req, res) => {
     }
 });
 
-// Create post endpoint (protected)
 app.post('/api/posts', authenticateToken, async (req, res) => {
     try {
         const { title, content } = req.body;
         const userId = (req as any).user.userId;
 
-        // Input validation
         if (!title || !content) {
             return res.status(400).json({ error: 'Title and content are required' });
         }
@@ -267,10 +242,8 @@ app.post('/api/posts', authenticateToken, async (req, res) => {
             return res.status(400).json({ error: 'Invalid input format' });
         }
 
-        // Create post (parameterized query prevents SQL injection)
         const post = await db.createPost(title, content, userId);
 
-        // Sanitize data before sending
         const sanitizedPost = sanitizeObject(post);
 
         res.status(201).json({
@@ -284,36 +257,32 @@ app.post('/api/posts', authenticateToken, async (req, res) => {
     }
 });
 
-// Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
     console.error('Unhandled error:', err);
     res.status(500).json({ error: 'Internal server error' });
 });
 
-// 404 handler
 app.use((req, res) => {
-  res.status(404).json({ error: 'Endpoint not found' });
+    res.status(404).json({ error: 'Endpoint not found' });
 });
 
-// Start server
 app.listen(PORT, () => {
-    console.log(`🚀 Secure API server running on http://localhost:${PORT}`);
-    console.log(`📊 Health check: http://localhost:${PORT}/health`);
-    console.log(`🔐 Login endpoint: POST http://localhost:${PORT}/auth/login`);
-    console.log(`📋 Protected data: GET http://localhost:${PORT}/api/data`);
-    console.log(`👤 Create user: POST http://localhost:${PORT}/api/users`);
-    console.log(`📝 Create post: POST http://localhost:${PORT}/api/posts`);
+    console.log(`Secure API server running on http://localhost:${PORT}`);
+    console.log(`Health check: http://localhost:${PORT}/health`);
+    console.log(`Login endpoint: POST http://localhost:${PORT}/auth/login`);
+    console.log(`Protected data: GET http://localhost:${PORT}/api/data`);
+    console.log(`Create user: POST http://localhost:${PORT}/api/users`);
+    console.log(`Create post: POST http://localhost:${PORT}/api/posts`);
 });
 
-// Graceful shutdown
 process.on('SIGINT', () => {
-    console.log('\n🛑 Shutting down server...');
+    console.log('\nShutting down server...');
     db.close();
     process.exit(0);
 });
 
 process.on('SIGTERM', () => {
-    console.log('\n🛑 Shutting down server...');
+    console.log('\nShutting down server...');
     db.close();
     process.exit(0);
 });
